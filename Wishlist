@@ -1,0 +1,613 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>30-Day Wishlist</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Caveat:wght@600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#f6f1e8;
+      --paper:#fbf7ef;
+      --card:#ffffff;
+      --ink:rgba(12,12,13,.92);
+      --muted:rgba(12,12,13,.62);
+      --border:rgba(12,12,13,.10);
+      --border2:rgba(12,12,13,.14);
+      --shadow: 0 16px 50px rgba(12,12,13,.10);
+      --radius:18px;
+
+      --ok: rgba(26,160,110,.14);
+      --warn: rgba(210,140,40,.14);
+      --bad: rgba(200,60,60,.12);
+
+      --brown:#6B4E3D;
+      --burg:#5A1F2B;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color:var(--ink);
+      background:
+        radial-gradient(900px 600px at 20% 0%, rgba(12,12,13,.06), transparent 60%),
+        radial-gradient(900px 600px at 85% 20%, rgba(12,12,13,.04), transparent 60%),
+        var(--bg);
+    }
+
+    .wrap{max-width:980px;margin:0 auto;padding:18px 16px 90px;}
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      background: linear-gradient(to bottom, rgba(246,241,232,.94), rgba(246,241,232,.82), rgba(246,241,232,0));
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid rgba(12,12,13,.06);
+    }
+    .topbar-inner{
+      max-width:980px;margin:0 auto;padding:14px 16px;
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+    }
+    .brand{display:flex;align-items:baseline;gap:12px;line-height:1}
+    .brand .title{
+      font-weight:900;letter-spacing:.12em;font-size:13px;
+    }
+    .brand .scrib{
+      font-family:Caveat,cursive;
+      color:var(--muted);
+      font-size:22px;
+      font-weight:700;
+    }
+
+    .nav{
+      display:flex;gap:8px;align-items:center;
+      padding:6px;border-radius:999px;
+      border:1px solid rgba(12,12,13,.08);
+      background: rgba(255,255,255,.55);
+    }
+    .nav button{
+      appearance:none;border:0;background:transparent;
+      padding:9px 12px;border-radius:999px;
+      cursor:pointer;font-weight:800;font-size:13px;color:var(--muted);
+    }
+    .nav button.active{background: rgba(12,12,13,.08); color:var(--ink);}
+
+    .panel{
+      border:1px solid rgba(12,12,13,.08);
+      background: rgba(255,255,255,.58);
+      border-radius: var(--radius);
+      padding:14px;
+      box-shadow: 0 12px 34px rgba(12,12,13,.06);
+    }
+
+    .hero{padding:14px 0 10px;display:flex;justify-content:space-between;align-items:flex-end;gap:14px}
+    .hero h1{margin:0;font-size:28px;letter-spacing:-0.04em}
+    .hero p{margin:8px 0 0;color:var(--muted);max-width:70ch;font-size:14px;line-height:1.5}
+    .hero .note{font-family:Caveat,cursive;color:var(--muted);font-size:22px;white-space:nowrap}
+
+    .page{display:none}
+    .page.active{display:block}
+
+    .grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0,1fr));
+      gap:14px;
+    }
+    @media (max-width: 720px){ .grid{grid-template-columns:1fr} .hero{flex-direction:column;align-items:flex-start} .hero .note{white-space:normal}}
+
+    .card{
+      background: rgba(255,255,255,.84);
+      border:1px solid rgba(12,12,13,.10);
+      border-radius: 20px;
+      overflow:hidden;
+      box-shadow: 0 16px 44px rgba(12,12,13,.06);
+      display:flex;flex-direction:column;
+    }
+
+    .img{
+      height:210px;
+      background: rgba(12,12,13,.04);
+      position:relative;
+      overflow:hidden;
+    }
+    .img img{width:100%;height:100%;object-fit:cover;display:block}
+    .img::after{content:"";position:absolute;inset:0;background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,.12));pointer-events:none;}
+
+    .pillRow{
+      position:absolute;left:12px;right:12px;top:12px;
+      display:flex;justify-content:space-between;gap:10px;align-items:flex-start;
+    }
+    .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      padding:7px 10px;border-radius:999px;
+      border:1px solid rgba(255,255,255,.35);
+      background: rgba(255,255,255,.74);
+      font-size:12px;font-weight:900;
+      backdrop-filter: blur(10px);
+    }
+    .pill small{font-weight:800;color:rgba(12,12,13,.55)}
+    .pill.locked{background: var(--warn); border-color: rgba(210,140,40,.18)}
+    .pill.unlocked{background: var(--ok); border-color: rgba(26,160,110,.18)}
+
+    .body{
+      padding:14px;
+      display:flex;flex-direction:column;gap:10px;
+    }
+    .brandLine{
+      color:rgba(12,12,13,.60);
+      font-size:12px;
+      letter-spacing:0.12em;
+      text-transform:uppercase;
+      font-weight:900;
+    }
+    .name{font-size:15px;font-weight:900;line-height:1.25;letter-spacing:-0.02em}
+    .row{display:flex;justify-content:space-between;gap:10px;align-items:baseline}
+    .price{font-size:18px;font-weight:900}
+    .meta{font-size:12px;color:rgba(12,12,13,.62);font-variant-numeric:tabular-nums}
+    .scribble{font-family:Caveat,cursive;color:rgba(12,12,13,.62);font-size:22px;line-height:1;margin-top:2px}
+
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:8px}
+    .btn{
+      appearance:none;
+      border:1px solid rgba(12,12,13,.12);
+      background: rgba(255,255,255,.85);
+      color:var(--ink);
+      padding:10px 12px;border-radius:14px;
+      font-weight:900;font-size:13px;
+      cursor:pointer;
+    }
+    .btn.primary{background: rgba(90,31,43,.10); border-color: rgba(90,31,43,.20)}
+    .btn.primary:hover{background: rgba(90,31,43,.14)}
+    .btn.danger{background: rgba(200,60,60,.08); border-color: rgba(200,60,60,.16); color: rgba(12,12,13,.82)}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+
+    .formGrid{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width:720px){.formGrid{grid-template-columns:1fr}}
+
+    label{display:block;color:var(--muted);font-size:12px;font-weight:800;margin:0 0 8px}
+    input, select{
+      width:100%;
+      background: rgba(255,255,255,.85);
+      border:1px solid rgba(12,12,13,.10);
+      padding:10px 12px;border-radius:14px;
+      outline:none;font-size:14px;color:var(--ink);
+    }
+    input::placeholder{color:rgba(12,12,13,.35)}
+
+    .toast{
+      margin-top:12px;
+      padding:12px 14px;border-radius:16px;
+      border:1px solid rgba(12,12,13,.10);
+      background: rgba(255,255,255,.75);
+      color:rgba(12,12,13,.70);
+      display:none;justify-content:space-between;gap:12px;align-items:center;
+    }
+
+    .empty{
+      margin-top:14px;
+      color:var(--muted);
+      font-size:14px;
+      line-height:1.5;
+    }
+
+    .settingsRow{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    input[type="range"]{width:min(420px,100%)}
+    .tiny{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="title">WISHLIST</div>
+        <div class="scrib">buy slower. dress better.</div>
+      </div>
+
+      <div class="nav">
+        <button type="button" class="tab active" data-page="wishlist">Wishlist</button>
+        <button type="button" class="tab" data-page="add">Add</button>
+        <button type="button" class="tab" data-page="settings">Settings</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- WISHLIST -->
+    <section id="page-wishlist" class="page active">
+      <div class="hero">
+        <div>
+          <h1>Your 30-day wishlist</h1>
+          <p>Save items you want. The timer starts immediately. If you still want it when the wait ends, you can buy — calmly, deliberately.</p>
+        </div>
+        <div class="note">impulse fades ✍️</div>
+      </div>
+
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:center">
+          <div class="tiny" id="summary"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button type="button" class="btn" id="sortNewest">Sort: newest</button>
+            <button type="button" class="btn" id="sortUnlock">Sort: unlock soon</button>
+            <button type="button" class="btn danger" id="clearAll">Clear all</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+      <div class="empty" id="empty" style="display:none">
+        Nothing saved yet. Go to <b>Add</b> and drop your first item in.
+      </div>
+    </section>
+
+    <!-- ADD -->
+    <section id="page-add" class="page">
+      <div class="hero">
+        <div>
+          <h1>Add an item</h1>
+          <p>Add manually for now. You can paste the retailer link and optionally an image URL.</p>
+        </div>
+        <div class="note">be your own editor ✍️</div>
+      </div>
+
+      <div class="panel">
+        <div class="formGrid">
+          <div>
+            <label>Item name</label>
+            <input id="name" placeholder="e.g. Linen midi dress" />
+          </div>
+          <div>
+            <label>Brand / retailer</label>
+            <input id="brand" placeholder="e.g. Nobody’s Child" />
+          </div>
+          <div>
+            <label>Price (£)</label>
+            <input id="price" type="number" min="0" step="1" placeholder="e.g. 89" />
+          </div>
+          <div>
+            <label>Category (optional)</label>
+            <input id="category" placeholder="e.g. Dresses" />
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Product URL</label>
+            <input id="url" type="url" placeholder="https://..." />
+          </div>
+          <div style="grid-column:1/-1">
+            <label>Image URL (optional)</label>
+            <input id="imageUrl" type="url" placeholder="https://...jpg" />
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+          <button type="button" class="btn primary" id="addBtn">Add to wishlist</button>
+          <button type="button" class="btn" id="demoBtn">Add demo item</button>
+        </div>
+
+        <div class="toast" id="toast"></div>
+      </div>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="page-settings" class="page">
+      <div class="hero">
+        <div>
+          <h1>Settings</h1>
+          <p>Adjust the waiting period (use 30 days in real life; shorter is useful for testing).</p>
+        </div>
+        <div class="note">standards are chic ✍️</div>
+      </div>
+
+      <div class="panel">
+        <div class="settingsRow">
+          <div style="min-width:220px">
+            <div style="font-weight:900">Wait period</div>
+            <div class="tiny">Changes apply to new saves and countdown display.</div>
+          </div>
+
+          <input id="waitDays" type="range" min="1" max="60" step="1" value="30" />
+          <div class="tiny" id="waitLabel">30 days</div>
+        </div>
+
+        <div style="margin-top:14px" class="tiny">
+          Data is stored in your browser (localStorage). No accounts yet — easy to add later with a backend.
+        </div>
+      </div>
+    </section>
+  </div>
+
+<script>
+  /***************
+   * STORAGE
+   ***************/
+  const KEY_ITEMS = "wishlist_items_v1";
+  const KEY_SETTINGS = "wishlist_settings_v1";
+
+  const defaultSettings = { waitDays: 30 };
+
+  const state = {
+    page: "wishlist",
+    items: [],
+    settings: { ...defaultSettings },
+    sort: "newest" // newest | unlock
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const now = () => Date.now();
+  const daysMs = (d) => d * 24 * 60 * 60 * 1000;
+
+  function load(){
+    try{
+      const s = JSON.parse(localStorage.getItem(KEY_SETTINGS) || "null");
+      if(s && typeof s.waitDays === "number") state.settings.waitDays = s.waitDays;
+    }catch{}
+
+    try{
+      const arr = JSON.parse(localStorage.getItem(KEY_ITEMS) || "[]");
+      state.items = Array.isArray(arr) ? arr : [];
+    }catch{
+      state.items = [];
+    }
+  }
+
+  function persist(){
+    localStorage.setItem(KEY_ITEMS, JSON.stringify(state.items));
+  }
+
+  function persistSettings(){
+    localStorage.setItem(KEY_SETTINGS, JSON.stringify(state.settings));
+  }
+
+  function uid(){
+    return "w_" + Math.random().toString(16).slice(2) + "_" + Date.now().toString(16);
+  }
+
+  function esc(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
+  function money(n){
+    const v = Number(n || 0);
+    return "£" + v.toFixed(0);
+  }
+
+  function countdown(savedAt){
+    const wait = daysMs(state.settings.waitDays);
+    const elapsed = now() - savedAt;
+    const remaining = wait - elapsed;
+
+    const unlocked = remaining <= 0;
+    const daysLeft = Math.max(0, Math.ceil(remaining / daysMs(1)));
+
+    return { unlocked, daysLeft, remaining };
+  }
+
+  function setPage(p){
+    state.page = p;
+    document.querySelectorAll(".tab").forEach(b=>{
+      b.classList.toggle("active", b.dataset.page === p);
+    });
+    document.querySelectorAll(".page").forEach(sec=>sec.classList.remove("active"));
+    $("page-"+p).classList.add("active");
+
+    if(p === "wishlist") render();
+    if(p === "settings") renderSettings();
+  }
+  window.setPage = setPage;
+
+  function toast(msg, kind="info"){
+    const t = $("toast");
+    t.style.display = "flex";
+    t.innerHTML = `<div>${msg}</div><div style="font-family:Caveat,cursive;font-size:22px">${kind==="error"?"oops":"ok"}</div>`;
+    if(kind !== "error") setTimeout(()=>t.style.display="none", 2200);
+  }
+
+  function addItem({name, brand, price, category, url, imageUrl}){
+    const n = String(name||"").trim();
+    const b = String(brand||"").trim();
+    const u = String(url||"").trim();
+
+    if(!n) return { ok:false, msg:"Item name is required." };
+    if(!b) return { ok:false, msg:"Brand / retailer is required." };
+    if(!u || !u.startsWith("http")) return { ok:false, msg:"A valid product URL is required (must start with http)." };
+
+    const p = Number(price || 0);
+    const item = {
+      id: uid(),
+      name: n,
+      brand: b,
+      category: String(category||"").trim(),
+      price: isFinite(p) ? p : 0,
+      url: u,
+      imageUrl: String(imageUrl||"").trim(),
+      savedAt: now()
+    };
+
+    state.items.unshift(item);
+    persist();
+    return { ok:true };
+  }
+
+  function removeItem(id){
+    state.items = state.items.filter(x=>x.id !== id);
+    persist();
+    render();
+  }
+
+  function clearAll(){
+    if(!confirm("Clear all wishlist items?")) return;
+    state.items = [];
+    persist();
+    render();
+  }
+
+  function sortItems(items){
+    if(state.sort === "newest"){
+      return [...items].sort((a,b)=>b.savedAt - a.savedAt);
+    }
+    // unlock soon
+    return [...items].sort((a,b)=>{
+      const ca = countdown(a.savedAt);
+      const cb = countdown(b.savedAt);
+      return ca.remaining - cb.remaining;
+    });
+  }
+
+  function render(){
+    const grid = $("grid");
+    const empty = $("empty");
+    const summary = $("summary");
+
+    if(state.items.length === 0){
+      grid.innerHTML = "";
+      empty.style.display = "block";
+      summary.textContent = "0 items";
+      return;
+    }
+    empty.style.display = "none";
+
+    const items = sortItems(state.items);
+    const unlockedCount = items.filter(i=>countdown(i.savedAt).unlocked).length;
+    summary.textContent = `${items.length} item${items.length===1?"":"s"} • ${unlockedCount} unlocked`;
+
+    grid.innerHTML = items.map(item=>{
+      const c = countdown(item.savedAt);
+      const pillClass = c.unlocked ? "unlocked" : "locked";
+      const pillText = c.unlocked ? "Unlocked" : `${c.daysLeft} day${c.daysLeft===1?"":"s"} left`;
+      const scrib = c.unlocked ? "still want it? buy calmly." : "wait it out. see if it fades.";
+      const priceText = item.price ? money(item.price) : "—";
+
+      return `
+        <article class="card">
+          <div class="img">
+            ${item.imageUrl ? `<img src="${esc(item.imageUrl)}" alt="${esc(item.name)}" loading="lazy" onerror="this.style.display='none'">` : ``}
+            <div class="pillRow">
+              <div class="pill ${pillClass}">${pillText}</div>
+              <div class="pill"><small>saved</small> ${new Date(item.savedAt).toLocaleDateString()}</div>
+            </div>
+          </div>
+
+          <div class="body">
+            <div class="brandLine">${esc(item.brand)}${item.category ? ` • ${esc(item.category)}` : ""}</div>
+            <div class="name">${esc(item.name)}</div>
+
+            <div class="row">
+              <div class="price">${priceText}</div>
+              <div class="meta">30-day rule</div>
+            </div>
+
+            <div class="scribble">${scrib}</div>
+
+            <div class="actions">
+              <a class="btn primary" href="${esc(item.url)}" target="_blank" rel="noreferrer" ${c.unlocked ? "" : "aria-disabled='true'"} style="${c.unlocked ? "" : "pointer-events:none; opacity:.5"}">
+                Buy
+              </a>
+              <button type="button" class="btn" onclick="copyLink('${item.id}')">Copy link</button>
+              <button type="button" class="btn danger" onclick="removeItem('${item.id}')">Remove</button>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join("");
+  }
+
+  // Expose for inline handlers
+  window.removeItem = removeItem;
+
+  window.copyLink = (id)=>{
+    const item = state.items.find(x=>x.id===id);
+    if(!item) return;
+    navigator.clipboard?.writeText(item.url);
+    alert("Link copied ✅");
+  };
+
+  function renderSettings(){
+    $("waitDays").value = String(state.settings.waitDays);
+    $("waitLabel").textContent = `${state.settings.waitDays} day${state.settings.waitDays===1?"":"s"}`;
+  }
+
+  function wireUI(){
+    // Nav
+    document.querySelectorAll(".tab").forEach(b=>{
+      b.addEventListener("click", ()=>setPage(b.dataset.page));
+    });
+
+    // Add form
+    $("addBtn").addEventListener("click", ()=>{
+      const res = addItem({
+        name: $("name").value,
+        brand: $("brand").value,
+        price: $("price").value,
+        category: $("category").value,
+        url: $("url").value,
+        imageUrl: $("imageUrl").value
+      });
+      if(!res.ok) return toast(`<b>${esc(res.msg)}</b>`, "error");
+
+      toast("Added to wishlist.", "info");
+
+      // reset (keep brand sometimes useful; but reset fully for simplicity)
+      $("name").value = "";
+      $("price").value = "";
+      $("category").value = "";
+      $("url").value = "";
+      $("imageUrl").value = "";
+
+      setPage("wishlist");
+    });
+
+    $("demoBtn").addEventListener("click", ()=>{
+      addItem({
+        name: "Linen midi dress",
+        brand: "Nobody’s Child",
+        price: 89,
+        category: "Dresses",
+        url: "https://example.com",
+        imageUrl: "https://images.unsplash.com/photo-1520975958225-6a0d0be4a4b0?auto=format&fit=crop&w=1200&q=70"
+      });
+      toast("Demo item added.", "info");
+      setPage("wishlist");
+    });
+
+    // Wishlist actions
+    $("sortNewest").addEventListener("click", ()=>{ state.sort="newest"; render(); });
+    $("sortUnlock").addEventListener("click", ()=>{ state.sort="unlock"; render(); });
+    $("clearAll").addEventListener("click", clearAll);
+
+    // Settings
+    $("waitDays").addEventListener("input", (e)=>{
+      state.settings.waitDays = Number(e.target.value);
+      $("waitLabel").textContent = `${state.settings.waitDays} day${state.settings.waitDays===1?"":"s"}`;
+      persistSettings();
+      // Update countdown display immediately
+      if(state.page === "wishlist") render();
+    });
+  }
+
+  function init(){
+    load();
+    renderSettings();
+    wireUI();
+    render();
+  }
+
+  window.addEventListener("DOMContentLoaded", init);
+
+  // Update countdowns periodically without refreshing
+  setInterval(()=>{ if(state.page==="wishlist") render(); }, 60 * 1000);
+</script>
+</body>
+</html>
